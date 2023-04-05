@@ -1,0 +1,20 @@
+Group Ten
+Abby Vece, Nina Braddock, Evan Satterfield
+
+Graph ideas
+- race of officer vs race of complainer
+- number of complaints per rank
+- number of complaints per month
+- confidence interval for how long the case took vs board disposition 
+- 
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE,
+                      fig.align = "center")
+
+complaints <- read.csv("C_officercomplaints allegations_202007271729(2).csv")
+
+table(complaints$fado_type)
+
+
+```
