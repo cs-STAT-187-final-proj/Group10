@@ -6,15 +6,76 @@ Graph ideas
 - number of complaints per rank
 - number of complaints per month
 - confidence interval for how long the case took vs board disposition 
+- male vs female officer proportions of board disposition
 - 
 
 ```{r}
 knitr::opts_chunk$set(echo = TRUE,
                       fig.align = "center")
+pacman::p_load(tidyverse)
 
 complaints <- read.csv("C_officercomplaints allegations_202007271729(2).csv")
 
-table(complaints$fado_type)
+
+```
+
+
+
+
+```{r}
+# confidence interval for how long the case took vs board disposition
+
+complaints_intervals <-
+  complaints |>
+  filter(board_disposition != "Substantiated (MOS Unidentified)") |> # deleted cuz there was only one instance
+  select(unique_mos_id, month_received, year_received, month_closed, year_closed, board_disposition) |> 
+  mutate(months_takes = ((year_closed - year_received) * 12) + (month_closed-month_received)) |> 
+  group_by(board_disposition) |> 
+  summarize(num_complaints = n(),
+            median = median(months_takes),
+            average = mean(months_takes),
+            month_sd = sd(months_takes)) |>
+  mutate(t = qt(p = 0.975, df = n() -1),
+         lower = average - t * (month_sd/sqrt(num_complaints)),
+         upper = average + t * (month_sd/sqrt(num_complaints)),
+         lower2 = case_when(lower < 0 ~ 0,
+                            lower >= 0 ~ lower))
+
+ggplot(data = complaints_intervals,
+       mapping = aes(x = average,
+                     y = board_disposition))+
+  geom_segment(mapping = aes(x = lower2,
+                             xend = upper,
+                             y = board_disposition,
+                             yend = board_disposition),
+               color = "darkgrey")+
+  geom_point() +
+  theme_bw()+
+  labs(x = "Average number of months for case to clear",
+       y = "Board Disposition")+
+  theme(axis.ticks = element_blank())+
+  scale_x_continuous(minor_breaks = NULL)+
+  expand_limits(x = 0)
+
+```
+```{r}
+#box and whisker of age of officer vs fado type
+complaints_fado <-
+  complaints |> 
+  filter(complainant_age_incident > 0) |> 
+  select(unique_mos_id, complainant_age_incident,complainant_gender, mos_gender) |> 
+  mutate(complainant_gender_clean = case_when(complainant_gender == "Female" ~ "Female",
+                                              complainant_gender == "Male" ~ "Male",
+                                              TRUE ~ "Other"))
+
+ggplot(data = complaints_fado,
+       mapping = aes(x = complainant_gender_clean,
+                     y = complainant_age_incident))+
+  facet_wrap(~mos_gender)+
+  geom_boxplot()+
+  theme_bw()
+  
 
 
 ```
+
