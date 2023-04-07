@@ -7,14 +7,13 @@ Graph ideas
 - number of complaints per month
 - confidence interval for how long the case took vs board disposition 
 - male vs female officer proportions of board disposition
-- 
 
-```{r}
+```{r setup}
 knitr::opts_chunk$set(echo = TRUE,
                       fig.align = "center")
 pacman::p_load(tidyverse)
 
-complaints <- read.csv("C_officercomplaints allegations_202007271729(2).csv")
+complaints <- read.csv("allegations.csv")
 
 
 ```
@@ -23,7 +22,7 @@ intro
 
 
 
-```{r}
+```{r case vs board}
 # confidence interval for how long the case took vs board disposition
 
 complaints_intervals <-
@@ -64,7 +63,7 @@ ggplot(data = complaints_intervals,
   This graph shows the average number of months cases take to close. most of the cases take between 7 and 11 months to close, which is quite a long time. These cases were probably dragged on by the officers in hopes of the complainants wanting to drop the case. The quickest cases to close are the substantiated with no recommendations. This is probably because these are the cases that police officers want to close, and they took blame to get the case to blame quickly, knowing there were going to be no repercussions. The substantiated cases that do have repercussions also take a longer time, most likely because the police officer did something worse and were actively fighting it. One of the board dispositions was removed because there was only one case of it happening, so a confidence interval couldn't be created.  
 
 
-```{r}
+```{r complaint and gender}
 #box and whisker of age of complainant, gender, and officer gender
 complaints_gend <-
   complaints |> 
@@ -85,3 +84,37 @@ ggplot(data = complaints_gend,
 
 ```
   This graph shows the age and gender of the complainant on the X and Y axis, in regard to the gender of the officer complained about. My original thought when making this graph would be that male officers would have more complaints from younger women in terms of sexual harassment, but that is not the case. Male officers tend to have more complaints from younger men. Female officers tend to get complaints evenly from everyone. The other category in this table includes transgender people, nonbinary people, and people who did not include their gender in their complaint, so this could change the data people had included their genders. 
+
+
+```{r complaints per month}
+complaints_month <-
+  complaints |> 
+  select(month_received) |> 
+  count(month_received, name = "count")
+
+ggplot(data = complaints_month, mapping = aes(x = month_received, y = count)) +
+  theme_classic() +
+  scale_y_continuous(breaks=seq(0, 4000, by = 1000)) +
+  scale_x_continuous(breaks=seq(0, 12, by = 1)) +
+  geom_col(fill = "steelblue", color = "gray20") +
+  ggtitle("Complaints Received by Month") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  xlab("Month") + ylab("Number of Complaints Received")
+```
+  This graph shows the number of complaints received per month. The x axis is the month the complaint was received and the y axis is how many were received in that month. This graph ignores the year that the complaint was received. The goal of this graph was to see if the time of year affects the amount of complaints received. It seems like complaints are slightly more common during the spring and fall and noticeably lower during December, possibly due to the holidays.
+  
+```{r complaints per rank}
+complaints_rank <-
+  complaints |> 
+  select(rank_incident) |> 
+  count(rank_incident, name = "count") |> 
+  arrange(desc(count))
+
+ggplot(data = complaints_rank, mapping = aes(x = rank_incident, y = count)) +
+  theme_classic() +
+  geom_col(fill = "steelblue", color = "gray20") +
+  ggtitle("Complaints Received by Rank") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  xlab("Rank") + ylab("Number of Complaints Received")
+```
+  This graph shows the number of complaints received per rank of the officer. The x axis is the rank of the officer and the y axis is the number of complaints. This graph was made to see if certain ranks disproportionately receive complaints, and as expected the ranks that have to interact with people receive significantly more complaints than the ones that don't have to as much. 
