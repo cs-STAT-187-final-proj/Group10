@@ -18,7 +18,8 @@ complaints <- read.csv("C_officercomplaints allegations_202007271729(2).csv")
 
 
 ```
-
+intro
+  This data is a list of complaints against the New York City police department. it was created in July 2020. The source is ProPublica. This data has reports on officers that are still in the force as of June 2020, so there are more complaints of officers who aren't on the force that aren't included in this data set, so if these officers were fired because of their actions, they aren't included, which could entirely change the data. All the reports were investigated by the CCRB, who were not able to come to any conclusions in many of the cases because the officers weren't very forthcoming with their evidence (such as body cam footage), so this data is probably not even close to what the actual data should be, but there is still a great amount of information to analyize. This data is important because it came in the wake of the George Floyd case, so people were very critical of police officers and their actions, so having access to information like this can really give good insight into what police officers are doing, especially in a city as big as New York City. Any data cleaning for this set what done for each question individually. 
 
 
 
@@ -43,7 +44,7 @@ complaints_intervals <-
 
 ggplot(data = complaints_intervals,
        mapping = aes(x = average,
-                     y = board_disposition))+
+                     y = fct_reorder(board_disposition, average)))+
   geom_segment(mapping = aes(x = lower2,
                              xend = upper,
                              y = board_disposition,
@@ -55,12 +56,17 @@ ggplot(data = complaints_intervals,
        y = "Board Disposition")+
   theme(axis.ticks = element_blank())+
   scale_x_continuous(minor_breaks = NULL)+
-  expand_limits(x = 0)
+  expand_limits(x = 0) +
+  geom_text(mapping = aes(label = paste0("n = ", num_complaints),
+                          vjust = -.7))
 
 ```
+  This graph shows the average number of months cases take to close. most of the cases take between 7 and 11 months to close, which is quite a long time. These cases were probably dragged on by the officers in hopes of the complainants wanting to drop the case. The quickest cases to close are the substantiated with no recommendations. This is probably because these are the cases that police officers want to close, and they took blame to get the case to blame quickly, knowing there were going to be no repercussions. The substantiated cases that do have repercussions also take a longer time, most likely because the police officer did something worse and were actively fighting it. One of the board dispositions was removed because there was only one case of it happening, so a confidence interval couldn't be created.  
+
+
 ```{r}
-#box and whisker of age of officer vs fado type
-complaints_fado <-
+#box and whisker of age of complainant, gender, and officer gender
+complaints_gend <-
   complaints |> 
   filter(complainant_age_incident > 0) |> 
   select(unique_mos_id, complainant_age_incident,complainant_gender, mos_gender) |> 
@@ -68,7 +74,7 @@ complaints_fado <-
                                               complainant_gender == "Male" ~ "Male",
                                               TRUE ~ "Other"))
 
-ggplot(data = complaints_fado,
+ggplot(data = complaints_gend,
        mapping = aes(x = complainant_gender_clean,
                      y = complainant_age_incident))+
   facet_wrap(~mos_gender)+
@@ -78,4 +84,4 @@ ggplot(data = complaints_fado,
 
 
 ```
-
+  This graph shows the age and gender of the complainant on the X and Y axis, in regard to the gender of the officer complained about. My original thought when making this graph would be that male officers would have more complaints from younger women in terms of sexual harassment, but that is not the case. Male officers tend to have more complaints from younger men. Female officers tend to get complaints evenly from everyone. The other category in this table includes transgender people, nonbinary people, and people who did not include their gender in their complaint, so this could change the data people had included their genders. 
