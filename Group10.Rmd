@@ -118,3 +118,67 @@ ggplot(data = complaints_rank, mapping = aes(x = rank_incident, y = count)) +
   xlab("Rank") + ylab("Number of Complaints Received")
 ```
   This graph shows the number of complaints received per rank of the officer. The x axis is the rank of the officer and the y axis is the number of complaints. This graph was made to see if certain ranks disproportionately receive complaints, and as expected the ranks that have to interact with people receive significantly more complaints than the ones that don't have to as much. 
+  
+  
+```{r, race of officer vs race of complainer}
+complaints |> 
+  filter(allegation %in% c("Vehicle", "Physical force", "Gun Pointed", "Property damaged", "Chokehold")) ->
+  five
+
+ggplot(data = five) +
+  geom_bar(mapping = aes(x = allegation,
+                     fill = mos_ethnicity),
+       position = "fill",
+       color = "gray12",
+       size = 0.2) +
+  theme_minimal()+
+  scale_y_continuous(expand = c(0, 0, 0.05, 0),
+ labels = scales::percent,
+ breaks = (0:10)/10) +
+  labs(x = "Allegations",
+       y = "Proportion",
+       fill = "Ethnicity") 
+```
+This graph illustrates five main allegations found in the data set as proportional bar graphs. Each bar
+additionally looks at the complainant's ethnicity for that specific allegation. By setting position equal to fill, 
+the individual allegations can be looked at on their own an compare each ethnicity to them respectfully or be used
+to compare across allegations. For example, the proportion of allegations made against Hispanic individuals is greater
+for vehicles than any of the other four selected allegations. In general, there are more allegations made towards 
+white ethnicity because they represent a larger proportion of the sampled population. This also means that since
+American Indian's make up a small portion of the general population that the sample size of this study has the possibility
+of not including that group as, seen in this sample of allegations. While omitting this group from the data would not 
+change the visual appearance of the graph it is still important to include American Indian's because their representation
+in the data provides better context for where this study was done itself. 
+
+```{r, complainant_age_incident vs years}
+five |> 
+  select(complainant_age_incident) |> 
+  mutate(age_category = case_when(
+    complainant_age_incident >= 50 ~ "50+",
+    complainant_age_incident >= 40 & complainant_age_incident < 50 ~ "40-49",
+    complainant_age_incident >= 30 & complainant_age_incident < 40 ~ "30-39",
+    complainant_age_incident >= 25 & complainant_age_incident < 30 ~ "25-29",
+    complainant_age_incident >= 20 & complainant_age_incident < 25 ~ "20-24",
+    complainant_age_incident >= 18 & complainant_age_incident < 20 ~ "18-19",
+    complainant_age_incident < 18 ~ "under 18",
+  )) ->
+  cat
+
+  ggplot(data = cat,
+         mapping = aes(x = age_category)) + 
+  geom_bar(fill = "seagreen3",
+           color = "darkgreen") +
+  scale_y_continuous(expand = c(0, 0, 0.05, 0)) +
+    theme_classic() +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    labs(title = "Complaintant age",
+         x = "Age",
+         y = "Counts")
+```
+In having a visualization of the different age categories, this lets the viewer understand what type of people are
+making allegatoins. Age can be correlated with the amount of knowlege sourrounding the criminal justice system
+and may impact how that individual percieves events on a day-to-day basis to decide whether or not these events should
+be reported. The results of this graph were expected where the data is in the shape of a bell curve. Personally, I was
+expecting the data to be skewed slightly left as opposed to right because of the assumption that older people would
+understand the criminal justice system better and want to report more wrong doing actions. The data could be skewed 
+right because younger people tend to be mobile and therefore be exposed to more scenarios where complaints need to be made. 
