@@ -107,10 +107,14 @@ ggplot(data = complaints_month, mapping = aes(x = month_received, y = count)) +
 complaints_rank <-
   complaints |> 
   select(rank_incident) |> 
-  count(rank_incident, name = "count") |> 
-  arrange(desc(count))
+  count(rank_incident, name = "count")
 
-ggplot(data = complaints_rank, mapping = aes(x = rank_incident, y = count)) +
+complaints_rank$rank_incident[2] <- "Chief"
+
+complaints_rank$rank_incident <- factor(x = complaints_rank$rank_incident,
+                                        levels = c("Police Officer", "Detective", "Deputy Inspector", "Inspector", "Sergeant", "Lieutenant", "Captain", "Chief"))
+
+ggplot(data = complaints_rank, , mapping = aes(x = rank_incident, y = count)) +
   theme_classic() +
   geom_col(fill = "steelblue", color = "gray20") +
   ggtitle("Complaints Received by Rank") +
