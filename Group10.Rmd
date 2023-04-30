@@ -13,9 +13,7 @@ knitr::opts_chunk$set(echo = TRUE,
                       fig.align = "center")
 pacman::p_load(tidyverse)
 
-complaints <- read.csv("allegations.csv")
-
-
+complaints <- read.csv("C_officercomplaints allegations_202007271729(2).csv")
 ```
 intro
   This data is a list of complaints against the New York City police department. it was created in July 2020. The source is ProPublica. This data has reports on officers that are still in the force as of June 2020, so there are more complaints of officers who aren't on the force that aren't included in this data set, so if these officers were fired because of their actions, they aren't included, which could entirely change the data. All the reports were investigated by the CCRB, who were not able to come to any conclusions in many of the cases because the officers weren't very forthcoming with their evidence (such as body cam footage), so this data is probably not even close to what the actual data should be, but there is still a great amount of information to analyize. This data is important because it came in the wake of the George Floyd case, so people were very critical of police officers and their actions, so having access to information like this can really give good insight into what police officers are doing, especially in a city as big as New York City. Any data cleaning for this set what done for each question individually. 
@@ -95,11 +93,12 @@ complaints_month <-
 ggplot(data = complaints_month, mapping = aes(x = month_received, y = count)) +
   theme_classic() +
   scale_y_continuous(breaks=seq(0, 4000, by = 1000)) +
-  scale_x_continuous(breaks=seq(0, 12, by = 1)) +
+  scale_x_continuous(breaks=seq(0, 12, by = 1)) + #expand = c(0,0,0.05,0)
   geom_col(fill = "steelblue", color = "gray20") +
   ggtitle("Complaints Received by Month") +
   theme(plot.title = element_text(hjust = 0.5)) +
-  xlab("Month") + ylab("Number of Complaints Received")
+  xlab("Month") + 
+  ylab("Number of Complaints Received")
 ```
   This graph shows the number of complaints received per month. The x axis is the month the complaint was received and the y axis is how many were received in that month. This graph ignores the year that the complaint was received. The goal of this graph was to see if the time of year affects the amount of complaints received. It seems like complaints are slightly more common during the spring and fall and noticeably lower during December, possibly due to the holidays.
   
@@ -110,16 +109,18 @@ complaints_rank <-
   count(rank_incident, name = "count")
 
 complaints_rank$rank_incident[2] <- "Chief"
-
 complaints_rank$rank_incident <- factor(x = complaints_rank$rank_incident,
-                                        levels = c("Police Officer", "Detective", "Deputy Inspector", "Inspector", "Sergeant", "Lieutenant", "Captain", "Chief"))
-
-ggplot(data = complaints_rank, , mapping = aes(x = rank_incident, y = count)) +
+                                        levels = c("Police Officer", "Detective", "Deputy Inspector", 
+                                                   "Inspector", "Sergeant", "Lieutenant", "Captain", "Chief"))
+ggplot(data = complaints_rank, 
+       mapping = aes(x = rank_incident, y = count)) +
   theme_classic() +
   geom_col(fill = "steelblue", color = "gray20") +
   ggtitle("Complaints Received by Rank") +
   theme(plot.title = element_text(hjust = 0.5)) +
-  xlab("Rank") + ylab("Number of Complaints Received")
+  xlab("Rank") + 
+  ylab("Number of Complaints Received") 
+  # scale_x_discrete(expand = c(0,0,0.05,0))
 ```
   This graph shows the number of complaints received per rank of the officer. The x axis is the rank of the officer and the y axis is the number of complaints. This graph was made to see if certain ranks disproportionately receive complaints, and as expected the ranks that have to interact with people receive significantly more complaints than the ones that don't have to as much. 
   
@@ -134,7 +135,7 @@ ggplot(data = five) +
                      fill = mos_ethnicity),
        position = "fill",
        color = "gray12",
-       size = 0.2) +
+       linewidth = 0.2) +
   theme_minimal()+
   scale_y_continuous(expand = c(0, 0, 0.05, 0),
  labels = scales::percent,
@@ -157,7 +158,7 @@ in the data provides better context for where this study was done itself.
 ```{r, complainant_age_incident vs years}
 five |> 
   select(complainant_age_incident) |> 
-  mutate(age_category = case_when(
+  mutate(age_category = factor(case_when(
     complainant_age_incident >= 50 ~ "50+",
     complainant_age_incident >= 40 & complainant_age_incident < 50 ~ "40-49",
     complainant_age_incident >= 30 & complainant_age_incident < 40 ~ "30-39",
@@ -165,24 +166,23 @@ five |>
     complainant_age_incident >= 20 & complainant_age_incident < 25 ~ "20-24",
     complainant_age_incident >= 18 & complainant_age_incident < 20 ~ "18-19",
     complainant_age_incident < 18 ~ "under 18",
-  )) ->
-  cat
-
-  ggplot(data = cat,
-         mapping = aes(x = age_category)) + 
+  ), levels = c("under 18", "18-19", "20-24", "25-29", "30-39", "40-49", "50+", "NA")))|> 
+  ggplot(mapping = aes(x = age_category)) + 
   geom_bar(fill = "seagreen3",
            color = "darkgreen") +
-  scale_y_continuous(expand = c(0, 0, 0.05, 0)) +
+  scale_y_continuous(breaks=seq(0, 2000, by = 200),
+                     expand = c(0,0,0.05,0)) +
     theme_classic() +
     theme(plot.title = element_text(hjust = 0.5)) +
-    labs(title = "Complaintant age",
+    labs(title = "Complaintant Age on the Total Number of Complaints Made",
          x = "Age",
-         y = "Counts")
+         y = "Counts") 
 ```
-In having a visualization of the different age categories, this lets the viewer understand what type of people are
-making allegatoins. Age can be correlated with the amount of knowlege sourrounding the criminal justice system
-and may impact how that individual percieves events on a day-to-day basis to decide whether or not these events should
-be reported. The results of this graph were expected where the data is in the shape of a bell curve. Personally, I was
-expecting the data to be skewed slightly left as opposed to right because of the assumption that older people would
-understand the criminal justice system better and want to report more wrong doing actions. The data could be skewed 
-right because younger people tend to be mobile and therefore be exposed to more scenarios where complaints need to be made. 
+
+This bar graph shows the relationship between different ages and the total number of complaints made by each of these groups.
+As many would anticipate, the cluster of age groups makes a bell curve shaped graph. More specifically, the graph is right-skewed (positive skew)
+which may be influenced by the younger age groups being more mobile and put into situations where they need to call the police. Personally,
+I was expecting the data to be skewed slightly left because of the assumption that older people would understand the criminal justice system 
+better and want to report more wrong doings. It could be the case that the younger age groups just have more interactions overall with the police. This would mean that younger people would have a larger representation in the sample size of this study which would cause the graph to 
+be right-skewed. 
+
