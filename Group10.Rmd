@@ -189,7 +189,7 @@ I was expecting the data to be skewed slightly left because of the assumption th
 better and want to report more wrong doings. It could be the case that the younger age groups just have more interactions overall with the police. This would mean that younger people would have a larger representation in the sample size of this study which would cause the graph to 
 be right-skewed. 
 
-
+```{r}
 #classification tree
 #using officer rank and gender, complainant race, and fado_type to predict outcome
 
