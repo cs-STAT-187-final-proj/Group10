@@ -11,11 +11,11 @@ Graph ideas
 ```{r setup}
 knitr::opts_chunk$set(echo = TRUE,
                       fig.align = "center")
-pacman::p_load(tidyverse)
+pacman::p_load(tidyverse, rpart, rpart.plot)
 
-complaints <- read.csv("C_officercomplaints allegations_202007271729(2).csv")
+complaints <- read.csv("allegations.csv")
 ```
-intro
+
   This data is a list of complaints against the New York City police department. it was created in July 2020. The source is ProPublica. This data has reports on officers that are still in the force as of June 2020, so there are more complaints of officers who aren't on the force that aren't included in this data set, so if these officers were fired because of their actions, they aren't included, which could entirely change the data. All the reports were investigated by the CCRB, who were not able to come to any conclusions in many of the cases because the officers weren't very forthcoming with their evidence (such as body cam footage), so this data is probably not even close to what the actual data should be, but there is still a great amount of information to analyize. This data is important because it came in the wake of the George Floyd case, so people were very critical of police officers and their actions, so having access to information like this can really give good insight into what police officers are doing, especially in a city as big as New York City. Any data cleaning for this set what done for each question individually. 
 
 
@@ -71,7 +71,8 @@ complaints_gend <-
                                               complainant_gender == "Male" ~ "Male",
                                               TRUE ~ "Other")) |> 
   mutate(mos_gender = case_when(mos_gender == "F" ~"Female",
-                                mos_gender== "M" ~ "Male"))
+                                mos_gender== "M" ~ "Male")) 
+
 
 ggplot(data = complaints_gend,
        mapping = aes(x = complainant_gender_clean,
@@ -82,6 +83,8 @@ ggplot(data = complaints_gend,
   labs(y = "Complainant age at Incident",
        x = "Complainant Gender")+
   scale_y_continuous(expand = c(0,0,0.5,0))
+
+table(complaints_gend$complainant_gender_clean)
 
 ```
   This graph shows the age and gender of the complainant on the X and Y axis, in regard to the gender of the officer complained about. My original thought when making this graph would be that male officers would have more complaints from younger women in terms of sexual harassment, but that is not the case. Male officers tend to have more complaints from younger men. Female officers tend to get complaints evenly from everyone. The other category in this table includes transgender people, nonbinary people, and people who did not include their gender in their complaint, so this could change the data people had included their genders. 
@@ -244,6 +247,12 @@ fado_prune<-
 rpart.plot(x = fado_prune,
            type = 5,
            extra = 101,
-           box.palette = "pink")
+           box.palette = "lightblue")
 ```
-For machine learning, we made a classification tree to try and predict the outcome of complaints, whether they were substantiated, unsubstantiated, or exonerated. We went through many different trials of adding and taking away different variables, until we could get the best tree possible. The variables we used were fado type, complainant ethnicity, the rank of the officer at the time of the incident, and the officer's gender. As shows previously, there were more than three outcomes, but for the sake of understanding, we combined the different substantiated groups into just one outcome. The classification tree only has one leaf for substantiated. The substantiated complaints are complaints that were looked into and the officer was found guilty of breaking NYPD rules. The exonerated complaints are complaints that were looked into and the officer was found guilty, but what they did broke no NYPD rules, and Unsubstantiated complaints are complaints where the officer was not found guilty. Only 3% of the data is sorted into the substantiated outcome in the classification tree, despite almost 25% of outcomes being substantiated, and the tree as a whole was only correct about 50% of the time, so the classification tree isn't a hugely accurate in predicting outcomes. We chose the classification tree because the variable we were trying to predict was categorical and we were using categorical explanatory variables. 
+For machine learning, we made a classification tree to try and predict the outcome of complaints, whether they were substantiated, unsubstantiated, or exonerated. We went through many different trials of adding and taking away different variables, until we could get the best tree possible. The variables we used were fado type, complainant ethnicity, the rank of the officer at the time of the incident, and the officer's gender. As shows previously, there were more than three outcomes, but for the sake of understanding, we combined the different substantiated groups into just one outcome. The classification tree only has one leaf for substantiated. The substantiated complaints are complaints that were looked into and the officer was found guilty of breaking NYPD rules. The exonerated complaints are complaints that were looked into and the officer was found guilty, but what they did broke no NYPD rules, and Unsubstantiated complaints are complaints where the officer was not found guilty. Only 3% of the data is sorted into the substantiated outcome in the classification tree, despite almost 25% of outcomes being substantiated, and the tree as a whole was only correct about 50% of the time, so the classification tree isn't a hugely accurate in predicting outcomes. We chose the classification tree because the variable we were trying to predict was categorical and we were using categorical explanatory variables.
+
+Conclusion
+After analyzing the data set, there are a few things that stand out. The first is that only a few of these complaints resulted in consequences for the officer, and even then, a lot of the consequences were small. This gives us a small insight into possible corruptions in a system designed to keep people safe. Another thing that stood out is that some of our assumptions were incorrect, for example we thought that gender would have a greater impact for complaints against officers, thinking that male officers would have more complaints from female citizens, but that was proven untrue by the graph. Some of our assumptions were correct, like how we thought there would be a disproportionate amount of complaints from people of color compared to white people, especially African Americans. Data like this is important to look at and think about, because ever since 2020 and the death of George Floyd, police have been more critically observed, and for good reasons. These are just numbers on a spreadsheet to us, but it is important to not forget that these are real people and their lives.
+
+Limitations/Recommendations
+A big limitation of this data set is that it is only closed cases. We don't know how many cases are being drawn out due to things like not enough evidence, or cases being covered up and buried to protect officers. There are also many N/A's, unknown, or no response for a lot of the variables that we were investigating, so those could have significantly changed our results. There also are probably a number of unreported cases from people who were too scared to say anything about the NYPD. In the future, this project can be expanded to investigate different police officer races vs complainant races, and looking further into if things like rank have an impact on outcomes. It would also be interesting if we could look at open cases and see if they are any different compared to closed cases. 
